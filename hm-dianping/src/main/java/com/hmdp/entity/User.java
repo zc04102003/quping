@@ -19,8 +19,8 @@ import java.time.LocalDateTime;
  * @since 2021-12-22
  */
 @Data
-@EqualsAndHashCode(callSuper = false)
-@Accessors(chain = true)
+@EqualsAndHashCode(callSuper = false)   // 忽略父类属性
+@Accessors(chain = true) // 链式调用
 @TableName("tb_user")
 public class User implements Serializable {
 
