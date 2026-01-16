@@ -75,6 +75,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         return Result.ok();
     }
 
+    /**
+     * 登录功能
+     * @param loginForm 登录参数，包含手机号、验证码；或者手机号、密码
+     * @return  Result 登录结果
+     */
     @Override
     public Result login(LoginFormDTO loginForm, HttpSession session) {
         // 效验手机号
@@ -91,8 +96,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             return Result.fail("验证码错误!");
 
         // 查询数据库中是否有该条记录
-//        LambdaQueryChainWrapper<User> eq = lambdaQuery().eq(User::getPhone, loginForm.getPhone());
-//        User user = userMapper.selectOne(eq);
         User user = query().eq("phone", loginForm.getPhone()).one();
         if (user == null) {
             // 用户不存在,创建新用户
@@ -113,7 +116,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         stringRedisTemplate.opsForHash().putAll(RedisConstants.LOGIN_USER_KEY + token, userMap);
         // 设置过期时间,30min
         stringRedisTemplate.expire(RedisConstants.LOGIN_USER_KEY + token,
-                RedisConstants.LOGIN_USER_TTL, TimeUnit.MINUTES);
+                RedisConstants.LOGIN_USER_TTL,  // token有效期
+                TimeUnit.MINUTES
+        );
 
 //        session.setAttribute("user", userDTO);
         return Result.ok(token); // 返回token给前端

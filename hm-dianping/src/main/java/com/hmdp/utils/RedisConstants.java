@@ -19,12 +19,21 @@ public class RedisConstants {
     /**
      * 登录用户有效期
      */
-    public static final Long LOGIN_USER_TTL = 30L;
+    public static final Long LOGIN_USER_TTL = 60L;
 
+    /**
+     * 缓存空值时间
+     */
     public static final Long CACHE_NULL_TTL = 2L;
 
+    /**
+     * 缓存shop有效期
+     */
     public static final Long CACHE_SHOP_TTL = 30L;
 
+    /**
+     * 缓存shop key前缀
+     */
     public static final String CACHE_SHOP_KEY = "cache:shop:";
 
     public static final String LOCK_SHOP_KEY = "lock:shop:";

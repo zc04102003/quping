@@ -19,16 +19,14 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * @author : nongzhicong
- * 登录拦截器
+ * 刷新拦截器
  */
 @Slf4j
 @Component
 public class RefreshInterceptor implements HandlerInterceptor {
     @Autowired
     private StringRedisTemplate  stringRedisTemplate;
-    /**
-     * 登录拦截
-     */
+
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         // 1.从请求中获取session
