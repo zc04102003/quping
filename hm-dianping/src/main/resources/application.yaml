@@ -7,7 +7,7 @@ spring:
     active: dev # 默认开发环境
   datasource:
     driver-class-name: ${hmdp.datasource.driver-class-name}
-    url: jdbc:mysql://${hmdp.datasource.host}:${hmdp.datasource.port}/${hmdp.datasource.database}?useSSL=false&serverTimezone=UTC
+    url: jdbc:mysql://${hmdp.datasource.host}:${hmdp.datasource.port}/${hmdp.datasource.database}?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
     username: ${hmdp.datasource.username}
     password: ${hmdp.datasource.password}
   redis:
