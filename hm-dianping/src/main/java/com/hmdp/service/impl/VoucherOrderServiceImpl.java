@@ -10,6 +10,9 @@ import com.hmdp.service.IVoucherOrderService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.hmdp.utils.RedisIdWorker;
 import com.hmdp.utils.UserHolder;
+import lombok.NonNull;
+import org.springframework.aop.framework.AopContext;
+import org.springframework.aop.framework.AopProxy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,7 +38,6 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
      * @return 订单信息
      */
     @Override
-    @Transactional
     public Result seckillVoucher(Long voucherId) {
         // 1.查询秒杀优惠券
         SeckillVoucher seckillVoucher = seckillVoucherService.getById(voucherId);
@@ -53,27 +55,58 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
         //4.判断库存是否充足
         if (seckillVoucher.getStock() < 1)
             return Result.fail("库存不足!");
-        //5.扣减库存 stock = stock - 1
-        boolean success = seckillVoucherService.lambdaUpdate()
-                .setSql("stock = stock - 1")    // 自定义sql语句
-                .eq(SeckillVoucher::getVoucherId, voucherId)
-//                .eq(SeckillVoucher::getStock, seckillVoucher.getStock())    // 乐观锁
-                .gt(SeckillVoucher::getStock, 0)    // 库存大于0时才更新
-                .update();
-        if (!success) {
-            return Result.fail("库存不足!");
-        }
-        //6.创建订单
-        VoucherOrder voucherOrder = new VoucherOrder();
-        Long orderId = idWorker.nextId("order");    // 生成订单id
-        voucherOrder.setId(orderId);    // 订单id
-        Long userId = UserHolder.getUser().getId(); // 获取用户id
-        voucherOrder.setUserId(userId); // 用户id
-        voucherOrder.setVoucherId(voucherId); // 优惠券id
 
-        // 保存订单到SQL
-        this.save(voucherOrder);
-        //7.返回订单id
-        return Result.ok(orderId);
+        Long userId = UserHolder.getUser().getId();
+        synchronized (userId.toString().intern()) {   // 锁住当前用户,id值一作为一把锁
+            /*
+            事务先提交后再释放锁
+            获取代理对象,使事务生效
+             */
+            IVoucherOrderService proxy = (IVoucherOrderService) AopContext.currentProxy();
+            return proxy.createVoucherOrder(voucherId);
+        }
+    }
+
+    /**
+     * 创建订单
+     * @param voucherId 优惠券id
+     * @return 订单信息
+     */
+    @Override
+    @Transactional
+    public @NonNull Result createVoucherOrder(Long voucherId) {
+        // 判断一人一单
+        Long userId = UserHolder.getUser().getId(); // 获取用户id
+
+            // 4.查询订单
+            long count = lambdaQuery().eq(VoucherOrder::getUserId, userId)  // 根据用户ID和优惠卷ID获取用户订单数量
+                    .eq(VoucherOrder::getVoucherId, voucherId)
+                    .count();
+            if (count > 0) {
+                return Result.fail("当前用户购买已上限!");
+            }
+
+            //5.扣减库存 stock = stock - 1
+            boolean success = seckillVoucherService.lambdaUpdate()
+                    .setSql("stock = stock - 1")    // 自定义sql语句
+                    .eq(SeckillVoucher::getVoucherId, voucherId)
+                    .gt(SeckillVoucher::getStock, 0)    // 库存大于0时才更新
+                    .update();
+            if (!success) {
+                // 扣减失败
+                return Result.fail("库存不足!");
+            }
+
+            //6.创建订单
+            VoucherOrder voucherOrder = new VoucherOrder();
+            Long orderId = idWorker.nextId("order");    // 生成订单id
+            voucherOrder.setId(orderId);    // 订单id
+            voucherOrder.setUserId(userId); // 用户id
+            voucherOrder.setVoucherId(voucherId); // 优惠券id
+
+            // 保存订单到SQL
+            this.save(voucherOrder);
+            //7.返回订单id
+            return Result.ok(orderId);
     }
 }
