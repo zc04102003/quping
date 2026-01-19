@@ -37,50 +37,50 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
 
     private static final ExecutorService CACHE_REBUILD_EXECUTOR = Executors.newFixedThreadPool(10); // 线程池，用于缓存重建
 
-    /**
+    /*
      * 根据id查询商铺信息 : 逻辑过期
      * @param id 商铺id
      * @return 商铺详情数据
      */
-    @Override
-    public Result selectShopById(Long id) {
-        // 从Redis中查询商铺缓存
-        String shopKey = RedisConstants.CACHE_SHOP_KEY + id;    // 缓存key
-        String shopCache = stringRedisTemplate.opsForValue().get(shopKey);
-        // 判断是否存在
-        if (StrUtil.isBlank(shopCache)) {    // ""/null -> false
-            // 未命中Redis缓存,直接返回空数据
-            return null;
-        }
-        // 从Redis缓存中获取数据
-        RedisData redisData = JSONUtil.toBean(shopCache, RedisData.class);  // 先把获取到的Redis数据转成实体类
-        Shop shop = JSONUtil.toBean((JSONObject) redisData.getData(), Shop.class);  // 把JSON转换成实体类
-        LocalDateTime expireTime = redisData.getExpireTime();   // 缓存过期时间
-        // 命中Redis数据,判断缓存是否过期
-        if (expireTime.isAfter(LocalDateTime.now())){   // 是否在当前时间后
-            // 未过期,返回店铺数据
-            return Result.ok(shop);
-        }
-        // 已过期,需要缓存重建
-        boolean isLock = this.tryLock(RedisConstants.LOCK_SHOP_KEY + id);   // 尝试获取锁
-        if (isLock) {
-            // TODO 获取成功,开启独立线程实现缓存重建,需要双层检查
-            CACHE_REBUILD_EXECUTOR.submit(() -> {
-                try {
-                    // 缓存重建
-                    this.saveShopRedis(id, 20L);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }finally {
-                    // 释放锁
-                    this.unLock(RedisConstants.LOCK_SHOP_KEY + id);
-                }
-            });
-        }
-
-        // 返回
-        return Result.ok(shop);
-    }
+//    @Override
+//    public Result selectShopById(Long id) {
+//        // 从Redis中查询商铺缓存
+//        String shopKey = RedisConstants.CACHE_SHOP_KEY + id;    // 缓存key
+//        String shopCache = stringRedisTemplate.opsForValue().get(shopKey);
+//        // 判断是否存在
+//        if (StrUtil.isBlank(shopCache)) {    // ""/null -> false
+//            // 未命中Redis缓存,直接返回空数据
+//            return null;
+//        }
+//        // 从Redis缓存中获取数据
+//        RedisData redisData = JSONUtil.toBean(shopCache, RedisData.class);  // 先把获取到的Redis数据转成实体类
+//        Shop shop = JSONUtil.toBean((JSONObject) redisData.getData(), Shop.class);  // 把JSON转换成实体类
+//        LocalDateTime expireTime = redisData.getExpireTime();   // 缓存过期时间
+//        // 命中Redis数据,判断缓存是否过期
+//        if (expireTime.isAfter(LocalDateTime.now())){   // 是否在当前时间后
+//            // 未过期,返回店铺数据
+//            return Result.ok(shop);
+//        }
+//        // 已过期,需要缓存重建
+//        boolean isLock = this.tryLock(RedisConstants.LOCK_SHOP_KEY + id);   // 尝试获取锁
+//        if (isLock) {
+//            // TODO 获取成功,开启独立线程实现缓存重建,需要双层检查
+//            CACHE_REBUILD_EXECUTOR.submit(() -> {
+//                try {
+//                    // 缓存重建
+//                    this.saveShopRedis(id, 20L);
+//                } catch (Exception e) {
+//                    throw new RuntimeException(e);
+//                }finally {
+//                    // 释放锁
+//                    this.unLock(RedisConstants.LOCK_SHOP_KEY + id);
+//                }
+//            });
+//        }
+//
+//        // 返回
+//        return Result.ok(shop);
+//    }
 
     /*
      * 根据id查询商铺信息 : 互斥锁
@@ -148,7 +148,7 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
      * 根据id查询商铺信息 : 缓存穿透
      * @return 商铺详情数据
      */
-    /*public Result selectShopById(Long id) {
+    public Result selectShopById(Long id) {
         // 从Redis中查询商铺缓存
         String shopKey = RedisConstants.CACHE_SHOP_KEY + id;    // 缓存key
         String shopCache = stringRedisTemplate.opsForValue().get(shopKey);
@@ -185,7 +185,7 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
         // 返回
         return Result.ok(shop);
     }
-*/
+
     /**
      * 尝试获取锁
      * @return 获取锁成功返回true,获取锁失败返回false
