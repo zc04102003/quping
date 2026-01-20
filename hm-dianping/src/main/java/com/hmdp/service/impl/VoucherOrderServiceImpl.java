@@ -12,6 +12,8 @@ import com.hmdp.utils.RedisIdWorker;
 import com.hmdp.utils.SimpleRedisLock;
 import com.hmdp.utils.UserHolder;
 import lombok.NonNull;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.aop.framework.AopContext;
 import org.springframework.aop.framework.AopProxy;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +37,8 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
     private RedisIdWorker idWorker;
     @Autowired
     StringRedisTemplate stringRedisTemplate;
+    @Autowired
+    private RedissonClient redissonClient;
 
     /**
      * 秒杀优惠券
@@ -62,9 +66,11 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
 
         Long userId = UserHolder.getUser().getId();
         // 创建锁对象,范围是用户ID
-        SimpleRedisLock lock = new SimpleRedisLock("order" + userId, stringRedisTemplate);
+        //SimpleRedisLock lock = new SimpleRedisLock("order" + userId, stringRedisTemplate);
+        RLock lock = redissonClient.getLock("order" + userId);
+
         // 获取锁
-        boolean isLock = lock.tryLock(5);
+        boolean isLock = lock.tryLock();
         if (!isLock) {
             // 获取锁失败
             return Result.fail("不允许重复下单!");
