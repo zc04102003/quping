@@ -32,6 +32,12 @@ public class BlogController {
     @Resource
     private IUserService userService;
 
+    /**
+     * 保存探店博文
+     * @param blog 博文
+     * @return 探店博文id
+      *
+     */
     @PostMapping
     public Result saveBlog(@RequestBody Blog blog) {
         // 获取登录用户
@@ -43,6 +49,11 @@ public class BlogController {
         return Result.ok(blog.getId());
     }
 
+    /**
+     * 点赞
+     * @param id 博文id
+     * @return 响应结果
+     */
     @PutMapping("/like/{id}")
     public Result likeBlog(@PathVariable("id") Long id) {
         // 修改点赞数量
@@ -51,6 +62,11 @@ public class BlogController {
         return Result.ok();
     }
 
+    /**
+     * 查询当前用户所点赞的博文
+     * @param current 当前页
+     * @return 响应结果
+     */
     @GetMapping("/of/me")
     public Result queryMyBlog(@RequestParam(value = "current", defaultValue = "1") Integer current) {
         // 获取登录用户
@@ -63,21 +79,23 @@ public class BlogController {
         return Result.ok(records);
     }
 
+    /**
+     * 查询最热博文
+     * @param current 当前页
+     * @return 响应结果
+     */
     @GetMapping("/hot")
     public Result queryHotBlog(@RequestParam(value = "current", defaultValue = "1") Integer current) {
-        // 根据用户查询
-        Page<Blog> page = blogService.query()
-                .orderByDesc("liked")
-                .page(new Page<>(current, SystemConstants.MAX_PAGE_SIZE));
-        // 获取当前页数据
-        List<Blog> records = page.getRecords();
-        // 查询用户
-        records.forEach(blog ->{
-            Long userId = blog.getUserId();
-            User user = userService.getById(userId);
-            blog.setName(user.getNickName());
-            blog.setIcon(user.getIcon());
-        });
-        return Result.ok(records);
+        return blogService.queryHotBlog(current);
+    }
+
+    /**
+     * 查询博文详情
+     * @param id 博文id
+     * @return 响应结果
+     */
+    @GetMapping("/{id}")
+    public Result queryBlogById(@PathVariable Long id){
+        return blogService.queryBlogById(id);
     }
 }
