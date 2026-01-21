@@ -51,8 +51,14 @@ public class RedisConstants {
      */
     public static final String SECKILL_STOCK_KEY = "seckill:stock:";
 
+    /**
+     * 博客点赞key前缀
+     */
     public static final String BLOG_LIKED_KEY = "blog:liked:";
 
+    /**
+     * feed流key前缀
+     */
     public static final String FEED_KEY = "feed:";
 
     public static final String SHOP_GEO_KEY = "shop:geo:";
