@@ -46,6 +46,9 @@ public class RedisConstants {
      */
     public static final Long LOCK_SHOP_TTL = 10L;
 
+    /**
+     * 秒杀库存key前缀
+     */
     public static final String SECKILL_STOCK_KEY = "seckill:stock:";
 
     public static final String BLOG_LIKED_KEY = "blog:liked:";
