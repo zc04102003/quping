@@ -91,4 +91,15 @@ public class UserController {
         // 返回
         return Result.ok(info);
     }
+
+    /**
+     * 查询会员详情
+     * @param id 会员id
+     * @return 会员详情
+     */
+    @GetMapping("/{id}")
+    public Result userDetails(@PathVariable Long id){
+        return userService.userDetails(id);
+    }
+
 }

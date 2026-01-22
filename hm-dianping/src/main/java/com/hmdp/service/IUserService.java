@@ -30,4 +30,11 @@ public interface IUserService extends IService<User> {
      *
      */
     Result login(LoginFormDTO loginForm, HttpSession session);
+
+    /**
+     * 获取用户详情
+     * @param id
+     * @return
+     */
+    Result userDetails(Long id);
 }

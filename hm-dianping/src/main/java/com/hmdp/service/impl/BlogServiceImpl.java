@@ -214,4 +214,22 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
 
         return Result.ok(userDTOList);
     }
+
+    /**
+     * 查询用户博文
+     * @param id 用户id
+     * @param current 当前页
+     * @return 响应结果
+     */
+    @Override
+    public Result selectUserBlogs(Long id, Integer current) {
+        // 根据用户id查询对应的博文
+        Page<Blog> page = lambdaQuery()
+                .eq(Blog::getUserId, id)
+                .page(new Page<>(current, SystemConstants.MAX_PAGE_SIZE));
+        // 获取当前页数据
+        List<Blog> blogList = page.getRecords();
+
+        return Result.ok(blogList);
+    }
 }
