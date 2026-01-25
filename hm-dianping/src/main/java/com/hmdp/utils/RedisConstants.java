@@ -57,7 +57,7 @@ public class RedisConstants {
     public static final String BLOG_LIKED_KEY = "blog:liked:";
 
     /**
-     * feed流key前缀
+     * 推送feed流key前缀
      */
     public static final String FEED_KEY = "feed:";
 

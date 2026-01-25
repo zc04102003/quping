@@ -48,4 +48,19 @@ public interface IBlogService extends IService<Blog> {
      * @return 响应结果
      */
      public Result selectUserBlogs(Long id, Integer current);
+
+     /**
+     * 保存博文
+     * @param blog 博文
+     * @return 响应结果
+     */
+     public Result addBlog(Blog blog);
+
+     /**
+     * 查询用户关注博文
+     * @param max 最大时间戳
+     * @param offset 偏移量
+     * @return 响应结果
+     */
+    Result queryBlogOfFollow(Long max, Integer offset);
 }
